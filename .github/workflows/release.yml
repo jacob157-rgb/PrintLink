@@ -1,0 +1,99 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build Standalone Installer & Publish Release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Verify Environment & Tools
+        run: |
+          dotnet --info
+          git --version
+
+      - name: Run Test Suite
+        run: |
+          dotnet test tests/PrintLink.Tests/PrintLink.Tests.csproj --configuration Release --verbosity normal
+
+      - name: Build All-in-One Standalone Installer
+        shell: pwsh
+        run: |
+          ./installer/Build-Installer.ps1 -Configuration Release -SelfContained $true
+
+      - name: Verify Generated Installer
+        id: get_asset
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path installer/output -Filter "*.exe" | Select-Object -First 1
+          if (-not $installer) {
+            Write-Error "Installer executable was not found in installer/output!"
+            exit 1
+          }
+          Write-Host "Found Installer: $($installer.FullName) ($([math]::Round($installer.Length / 1MB, 2)) MB)"
+          "INSTALLER_PATH=$($installer.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "INSTALLER_NAME=$($installer.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Determine Release Tag
+        id: release_tag
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            $tag = $env:GITHUB_REF_NAME
+          } elseif ($env:INPUT_TAG_NAME) {
+            $tag = $env:INPUT_TAG_NAME
+          } else {
+            $tag = "v1.0.0"
+          }
+          "RELEASE_TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Using Release Tag: $tag"
+
+      - name: Create GitHub Release & Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "L-Net PrintLink ${{ env.RELEASE_TAG }}"
+          body: |
+            ## L-Net PrintLink ${{ env.RELEASE_TAG }} Enterprise Release 🚀
+
+            ### Fitur Utama & Pembaruan:
+            - **Modern Fluent Dark UI**: Tata letak multi-baris responsif, anti-overlap pada scaling DPI Windows 125%/150%.
+            - **Auto Server Driver Sync**: Otomatis mengunduh driver printer dari server dan mendaftarkannya di client via `pnputil.exe` dan Windows DriverStore.
+            - **Custom Paper Size Spooler Sync**: Otomatis mendaftarkan form kertas custom (Surat Jalan, faktur continuous paper, resi, label) langsung ke Windows Print Spooler (`AddFormW`).
+            - **Network Identity Status Bar**: Penampil IP lokal dan IP server target di status bar kiri bawah yang selalu aktif.
+            - **Refresh All + Auto LAN Discovery**: 1 klik untuk memindai seluruh printer jaringan LAN via UDP Broadcast.
+            - **Revoke & Delete Client**: Cabut dan hapus akses client seketika dari database SQLite dan server memory.
+            - **Launch at Login Wizard**: Ditawarkan langsung setelah instalasi selesai untuk auto-start saat Windows booting.
+            - **OTA Auto-Updater**: Pengecekan versi pembaruan langsung dari repositori GitHub secara otomatis.
+            - **100% Standalone Single-File Installer**: Tanpa perlu unduh/install .NET manual berulang kali!
+
+            ### Unduh Installer:
+            Unduh file `${{ env.INSTALLER_NAME }}` di bawah, klik kanan dan pilih **Run as Administrator** untuk instalasi sekali klik.
+          draft: false
+          prerelease: false
+          files: ${{ env.INSTALLER_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,37 @@
+## Visual Studio & IDE
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Build Artefacts & Compilations
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.log
+
+## Installer Staging & Final Binaries
+installer/temp_payload/
+installer/temp_setup/
+installer/output/
+installer/PrintLink.Setup/Resources/payload.zip
+
+## SQLite Databases (Runtime data)
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+## Test & Coverage Output
+TestResults/
+*.trx
+
+## Windows OS files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

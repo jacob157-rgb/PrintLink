@@ -1,0 +1,190 @@
+PROMPT ANTIGRAVITY — L-NET PRINTLINK
+
+PERAN Bertindak sebagai senior Windows desktop engineer, C#/.NET
+architect, network engineer, dan application security engineer. Bantu
+bangun aplikasi Windows bernama L-Net PrintLink berdasarkan kebutuhan di
+bawah ini. Kerjakan secara bertahap, periksa repository dan project yang
+sudah ada sebelum mengubah file. Jangan menghapus atau menimpa pekerjaan
+yang sudah ada tanpa alasan dan konfirmasi.
+
+TUJUAN PRODUK L-Net PrintLink adalah aplikasi Windows untuk berbagi
+printer antar-PC dengan fokus pada koneksi yang dapat dipantau,
+autentikasi, pemulihan koneksi, dan troubleshooting. Satu instalasi
+dapat berjalan dalam mode: 1. Server — membagikan printer lokal yang
+dipilih kepada client yang diizinkan. 2. Client — terhubung ke server
+dan menggunakan printer yang dibagikan. 3. Server + Client — membagikan
+printer lokal sekaligus memakai printer dari server lain.
+
+PENTING: jangan mengklaim universal printing sudah bekerja sebelum
+dibuktikan. Prioritaskan Proof of Concept (PoC) untuk mencetak dari
+aplikasi Windows biasa di client melalui jalur yang dipilih. Evaluasi
+pendekatan IPP/Windows printing interfaces dan Windows Print Spooler.
+Jelaskan trade-off dan rekomendasikan pendekatan berdasarkan
+implementasi nyata, bukan asumsi. Jangan membuat custom kernel driver
+untuk MVP. Jangan mengirim dokumen mentah sembarangan melalui socket
+tanpa memahami format dan jalur printer.
+
+TECH STACK - C#. - .NET 10 LTS jika tersedia pada environment; jika
+tidak, jelaskan versi SDK yang terpasang dan jangan mengganti framework
+secara diam-diam. - WPF untuk desktop GUI. - .NET Worker Service yang
+nantinya dipasang sebagai Windows Service untuk background service. -
+SQLite untuk konfigurasi dan metadata job lokal. - Logging terstruktur
+dengan rotasi. - Gunakan Windows Print Spooler/API yang sesuai dan
+driver printer yang telah terpasang. - Gunakan transport jaringan aman
+dengan autentikasi dan enkripsi; pilihan protokol harus ditentukan
+setelah PoC. - Target Windows 10/11 sesuai versi yang masih didukung dan
+dapat diuji di environment.
+
+PROJECT STRUCTURE YANG DIINGINKAN Jika repository masih kosong, buat
+solution Visual Studio bernama LNet.PrintLink dengan struktur modular: -
+src/PrintLink.Desktop — WPF GUI, dashboard, tray dan pengaturan. -
+src/PrintLink.Service — Worker Service/background service, nantinya
+Windows Service. - src/PrintLink.Core — model domain, kontrak, job
+lifecycle, konfigurasi. - src/PrintLink.Network — protokol, koneksi,
+autentikasi, discovery. - src/PrintLink.Spooler — integrasi Windows
+printer/spooler. - src/PrintLink.Storage — SQLite dan persistence. -
+src/PrintLink.Diagnostics — health checks, logs dan diagnostic export. -
+tests/PrintLink.Tests — unit/integration tests. - docs/PRD.md,
+docs/ARCHITECTURE.md, docs/SECURITY.md. Jangan membuat semua modul
+kosong hanya demi struktur. Buat project saat mulai dibutuhkan, dan
+pastikan solution tetap dapat build.
+
+FITUR PRODUK
+
+A. Setup dan mode - First-run wizard untuk memilih Server, Client, atau
+Server + Client. - UI menunjukkan mode aktif dan status service. - Satu
+codebase/installer untuk semua mode. - Konfigurasi dapat diubah tanpa
+harus menghapus data.
+
+B. Printer - Enumerasi printer Windows yang terpasang. - Tampilkan nama
+printer, driver, port, default, dan status jika tersedia. - Server dapat
+memilih printer mana yang dibagikan dan memberi nama share yang mudah
+dipahami. - Client hanya melihat printer yang diizinkan. - Laporkan
+printer yang tidak didukung atau tidak dapat diakses dengan jelas. -
+Jangan menganggap semua printer office, USB, LAN, thermal, receipt, dan
+label mempunyai jalur atau format yang sama. Buat adapter spesifik jika
+memang diperlukan setelah diuji.
+
+C. Authentication dan authorization - Akses remote harus memerlukan
+autentikasi. - Identitas/credential client dikelola administrator. - Hak
+akses dapat dibatasi per client dan per printer. - Credential tidak
+boleh disimpan sebagai plaintext; gunakan mekanisme perlindungan Windows
+yang sesuai, misalnya DPAPI/Credential Manager. - Enkripsi komunikasi
+jaringan dengan TLS jika menggunakan protokol aplikasi sendiri. -
+Sediakan revoke/rotate credential, rate limit login gagal, dan audit
+log. - Jangan expose server ke internet secara default. - Validasi
+server identity/endpoint sebelum mengirim credential. - Terapkan least
+privilege pada service dan GUI.
+
+D. Network dan auto-reconnect - Client dapat menambahkan server lewat
+IP/hostname. - Discovery LAN boleh ditambahkan, tetapi manual
+IP/hostname harus tetap tersedia sebagai fallback. - Connection test:
+DNS/IP, reachability, authentication, dan printer availability jika bisa
+diperiksa. - Deteksi timeout/disconnect. - Retry memakai exponential
+backoff + jitter dengan batas yang masuk akal. - Tampilkan status
+Connected, Reconnecting, Authentication Required, Unavailable, dan
+Error. - Setelah reconnect, refresh status printer dan job. - Reconnect
+tidak boleh otomatis dianggap berarti job cetak sebelumnya gagal.
+
+E. Job lifecycle dan reliability Gunakan PrintLink Job ID yang stabil.
+Simpan metadata job secara persisten jika memungkinkan. Tampilkan status
+yang dibedakan dengan jelas, minimal: Queued, Sending, Accepted,
+Spooling, Completed, Failed, Unknown. - Beri acknowledgement yang jelas
+saat server menerima job. - Hindari pemrosesan ganda berdasarkan
+PrintLink Job ID. - Jika koneksi putus dan hasil job tidak diketahui,
+tandai Unknown dan lakukan rekonsiliasi atau minta konfirmasi sebelum
+mengirim ulang. - Jangan mengklaim Completed berarti kertas pasti sudah
+keluar; Windows spooler belum tentu dapat mengonfirmasi hasil fisik. -
+Terapkan batas ukuran job dan streaming agar dokumen besar tidak dimuat
+seluruhnya ke memori. - Jangan simpan konten dokumen lebih lama daripada
+kebutuhan; jangan masukkan konten dokumen ke log.
+
+F. Windows startup dan tray - Background service harus dapat disetel
+otomatis start ketika Windows boot, tanpa GUI harus terbuka. - GUI/tray
+punya opsi terpisah untuk auto-start saat user login. - Tampilkan status
+service dan sediakan tindakan recovery yang aman. - Menutup GUI tidak
+boleh menghentikan service. - Menu tray: buka dashboard, status, buka
+logs/diagnostics, dan kontrol service hanya untuk user yang berwenang. -
+Implementasi Windows Service dan installer dilakukan setelah core
+service dapat dijalankan dan diuji; jangan mengklaim fitur startup
+selesai sebelum diuji setelah reboot.
+
+G. Dashboard dan screens 1. Dashboard: mode, service health,
+server/client connections, shared printers, recent jobs, alerts. 2.
+Printers: local/remote, status, share toggle, friendly name. 3. Servers:
+add server, discovery (jika tersedia), connection status, reconnect
+state. 4. Jobs: filter berdasarkan printer, client, tanggal, status;
+detail error; retry aman. 5. Clients & Access: daftar client, printer
+yang diizinkan, last seen, revoke credential. 6. Logs & Diagnostics:
+error, connection test, export diagnostic bundle. 7. Settings: mode,
+startup, network, security, retention, updates. 8. System tray: status
+ringkas dan akses cepat.
+
+H. Logging dan diagnostics - Structured rotating logs dengan
+retention. - Pesan error ramah pengguna dengan diagnostic/reference
+ID. - Export diagnostic bundle tanpa password, token, private key, atau
+konten dokumen. - Jangan pernah log secret. - Tangani error service,
+jaringan, autentikasi, database, dan spooler secara eksplisit.
+
+KEAMANAN DAN KUALITAS - Validasi semua request dan payload. - Batas
+ukuran job dan rate limit yang masuk akal. - Firewall/network binding
+harus terdokumentasi dan aman secara default. - ACL yang sesuai untuk
+config, database, dan logs. - Jangan menjalankan proses dengan hak
+administrator jika tidak dibutuhkan. - Jangan menambahkan
+dependency/library tanpa menjelaskan alasan dan lisensinya. - Gunakan
+dependency yang masih didukung dan pin versi yang sesuai. - Tambahkan
+tests untuk business logic dan job state. - Hindari hardcoded
+credentials, secret, alamat IP, atau password. - Jangan mengubah
+firewall Windows secara otomatis tanpa penjelasan/izin. - Jangan
+mengklaim keamanan atau kompatibilitas tanpa pengujian.
+
+CARA KERJA YANG HARUS DIIKUTI 1. Periksa isi repository, solution, file
+PRD, SDK .NET, dan status build yang sudah ada. 2. Ringkas kondisi awal
+dan temukan file yang relevan sebelum melakukan perubahan. 3. Buat
+rencana implementasi kecil dan berurutan. 4. Mulai dengan PoC teknis:
+enumerasi printer lokal, validasi jalur print dari client ke server
+melalui satu printer yang didukung, autentikasi dasar, dan uji gangguan
+jaringan. 5. Sebelum mengimplementasikan universal printing,
+dokumentasikan opsi protokol dan buktikan jalur yang dipilih. 6. Setelah
+PoC berhasil, lanjutkan ke service, model job, persistence, GUI,
+auto-reconnect, dan startup. 7. Buat perubahan incremental. Jangan
+menulis seluruh produk dalam satu file besar. 8. Build dan jalankan
+tests setelah perubahan yang bermakna. Perbaiki error sebelum
+melanjutkan. 9. Jika butuh hak administrator, akses hardware, dua PC,
+atau printer fisik yang tidak tersedia, nyatakan keterbatasannya dan
+buat test plan yang bisa dijalankan manual. 10. Jangan membuat
+implementasi palsu/stub yang ditampilkan seolah-olah fitur benar-benar
+berfungsi. Tandai TODO dan batasannya dengan jelas. 11. Jangan mengganti
+keputusan arsitektur penting tanpa menjelaskan dampaknya. 12. Pada
+setiap tahap, laporkan file yang dibuat/diubah, hasil build/test, fitur
+yang benar-benar berfungsi, keterbatasan, dan langkah berikutnya.
+
+ACCEPTANCE CRITERIA MVP - Solution dapat build di environment yang
+didukung. - GUI dan service terpisah. - Pengguna dapat memilih Server,
+Client, atau Server + Client. - Server dapat menampilkan printer lokal
+dan mengaktifkan sharing printer yang didukung. - Client dapat
+menambahkan server dan autentikasi. - Akses tanpa izin ditolak. -
+Printer yang diizinkan terlihat oleh client. - Satu jalur cetak nyata
+terbukti bekerja dari aplikasi Windows biasa di client ke printer
+server. - Service tetap berjalan ketika GUI ditutup. - Startup service
+dan startup GUI merupakan pengaturan yang berbeda. - Koneksi pulih
+otomatis setelah gangguan jaringan sementara. - Job yang hasilnya tidak
+pasti tidak dikirim ulang secara buta. - Metadata job bertahan setelah
+service restart. - Logs/diagnostics tidak membocorkan secret atau isi
+dokumen. - Dokumentasi menjelaskan firewall, konfigurasi, batasan, dan
+cara menjalankan tests.
+
+OUTPUT PERTAMA YANG DIMINTA Jangan langsung mengimplementasikan semua
+fitur. Pertama: 1. Periksa repository dan environment. 2. Buat atau
+perbarui docs/PRD.md berdasarkan requirement di atas. 3. Buat
+docs/ARCHITECTURE.md yang membandingkan opsi IPP, Windows printing
+interfaces/spooler, dan apakah perlu virtual printer/port component.
+Beri rekomendasi yang dapat dibuktikan. 4. Buat docs/SECURITY.md dengan
+threat model awal, credential storage, TLS, authorization, firewall,
+least privilege, dan logging policy. 5. Berikan rencana PoC langkah demi
+langkah beserta apa yang harus diuji pada dua PC Windows dan satu
+printer. 6. Jangan mengklaim printer sharing end-to-end sudah bekerja
+sebelum benar-benar diuji.
+
+Mulai dengan inspeksi repository dan laporkan temuan terlebih dahulu.
+Kemudian lanjutkan perubahan dokumentasi yang aman dan terukur.

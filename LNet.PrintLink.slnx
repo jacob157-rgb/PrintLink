@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/installer/">
+    <Project Path="installer/PrintLink.Setup/PrintLink.Setup.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/PrintLink.Core/PrintLink.Core.csproj" />
+    <Project Path="src/PrintLink.Desktop/PrintLink.Desktop.csproj" />
+    <Project Path="src/PrintLink.Diagnostics/PrintLink.Diagnostics.csproj" />
+    <Project Path="src/PrintLink.Network/PrintLink.Network.csproj" />
+    <Project Path="src/PrintLink.Service/PrintLink.Service.csproj" />
+    <Project Path="src/PrintLink.Spooler/PrintLink.Spooler.csproj" />
+    <Project Path="src/PrintLink.Storage/PrintLink.Storage.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PrintLink.Tests/PrintLink.Tests.csproj" />
+  </Folder>
+</Solution>

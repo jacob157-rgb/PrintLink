@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-PrintLink.Service-8c232338-e6b9-4d69-b586-bcebbbe71510</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PrintLink.Core\PrintLink.Core.csproj" />
+    <ProjectReference Include="..\PrintLink.Spooler\PrintLink.Spooler.csproj" />
+    <ProjectReference Include="..\PrintLink.Network\PrintLink.Network.csproj" />
+    <ProjectReference Include="..\PrintLink.Storage\PrintLink.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

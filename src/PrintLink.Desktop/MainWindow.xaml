@@ -1,0 +1,996 @@
+<Window x:Class="PrintLink.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:PrintLink.Desktop.ViewModels"
+        xmlns:conv="clr-namespace:PrintLink.Desktop.Converters"
+        mc:Ignorable="d"
+        Title="L-Net PrintLink — Enterprise Printer Sharing &amp; Recovery Engine" 
+        Icon="Assets/app.ico"
+        Height="720" Width="1160"
+        MinHeight="560" MinWidth="880"
+        WindowStartupLocation="CenterScreen"
+        Background="#0F172A"
+        FontFamily="Segoe UI">
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <conv:EqualityToVisibilityConverter x:Key="EqualityToVisibilityConverter" />
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <conv:TabBackgroundConverter x:Key="TabBackgroundConverter" />
+        <conv:TabForegroundConverter x:Key="TabForegroundConverter" />
+
+        <!-- Modern Rounded Primary Button -->
+        <Style x:Key="RoundedPrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2563EB" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#1D4ED8" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#94A3B8" />
+                                <Setter Property="Cursor" Value="No" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Rounded Secondary Button (Clean Light) -->
+        <Style x:Key="RoundedSecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#F8FAFC" />
+            <Setter Property="Foreground" Value="#334155" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="8" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" 
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#EDF2F7" />
+                                <Setter Property="Foreground" Value="#0F172A" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="btnBorder" Property="Opacity" Value="0.6" />
+                                <Setter Property="Cursor" Value="No" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Modern Rounded Danger Button -->
+        <Style x:Key="RoundedDangerButton" TargetType="Button">
+            <Setter Property="Background" Value="#EF4444" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="btnBorder" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#DC2626" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="btnBorder" Property="Background" Value="#FCA5A5" />
+                                <Setter Property="Cursor" Value="No" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Header Quick Pill Button -->
+        <Style x:Key="HeaderPillButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#475569" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Padding" Value="10,4" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="pillBorder" Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="pillBorder" Property="Background" Value="#E2E8F0" />
+                                <Setter Property="Foreground" Value="#0F172A" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Sidebar Navigation Tab Button -->
+        <Style x:Key="NavTabButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Margin" Value="0,3" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="navBorder" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="navBorder" Property="Background" Value="#1E293B" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Rounded Light Input TextBox -->
+        <Style x:Key="RoundedLightTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" 
+                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ScrollViewer x:Name="PART_ContentHost" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- MAIN WINDOW GRID (SIDEBAR + MAIN BODY) -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT SIDEBAR NAVIGATION -->
+            <Border Grid.Column="0" Background="#0F172A" Padding="14,16" BorderBrush="#1E293B" BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Brand Header with Application Icon -->
+                    <StackPanel Grid.Row="0" Margin="4,0,0,20">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="Assets/app.png" Width="34" Height="34" Margin="0,0,10,0" RenderOptions.BitmapScalingMode="HighQuality" />
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="L-Net PrintLink" Foreground="White" FontWeight="Bold" FontSize="14" />
+                                <TextBlock Text="Enterprise Sharing" Foreground="#64748B" FontSize="11" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Sidebar Navigation Menu -->
+                    <StackPanel Grid.Row="1">
+                        <!-- Tab 0: Printers Hub -->
+                        <Button Style="{StaticResource NavTabButtonStyle}" 
+                                Background="{Binding SelectedTabIndex, Converter={StaticResource TabBackgroundConverter}, ConverterParameter=0}"
+                                Foreground="{Binding SelectedTabIndex, Converter={StaticResource TabForegroundConverter}, ConverterParameter=0}"
+                                Content="🖨️  Printers Hub" 
+                                Command="{Binding NavigateTabCommand}" CommandParameter="0" />
+
+                        <!-- Tab 1: Print Jobs -->
+                        <Button Style="{StaticResource NavTabButtonStyle}" 
+                                Background="{Binding SelectedTabIndex, Converter={StaticResource TabBackgroundConverter}, ConverterParameter=1}"
+                                Foreground="{Binding SelectedTabIndex, Converter={StaticResource TabForegroundConverter}, ConverterParameter=1}"
+                                Content="📋  Print Jobs" 
+                                Command="{Binding NavigateTabCommand}" CommandParameter="1" />
+
+                        <!-- Tab 2: Settings & Diagnostics -->
+                        <Button Style="{StaticResource NavTabButtonStyle}" 
+                                Background="{Binding SelectedTabIndex, Converter={StaticResource TabBackgroundConverter}, ConverterParameter=2}"
+                                Foreground="{Binding SelectedTabIndex, Converter={StaticResource TabForegroundConverter}, ConverterParameter=2}"
+                                Content="⚙️  Settings &amp; Diagnostics" 
+                                Command="{Binding NavigateTabCommand}" CommandParameter="2" />
+                    </StackPanel>
+
+                    <!-- Sidebar Footer Status Pill -->
+                    <Border Grid.Row="2" Background="#1E293B" CornerRadius="12" Padding="12,10">
+                        <StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                <Ellipse Width="8" Height="8" Margin="0,0,8,0" Fill="{Binding ServiceStatusBrush}" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ServiceStatusText}" Foreground="#E2E8F0" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding ModeBadgeText}" Foreground="#38BDF8" FontSize="11" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- MAIN BODY CONTENT -->
+            <Grid Grid.Column="1" Background="#F8FAFC">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" MinHeight="54" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="28" />
+                </Grid.RowDefinitions>
+
+                <!-- RESPONSIVE TOP HEADER ACTION BAR -->
+                <Border Grid.Row="0" Background="White" Padding="16,8" BorderBrush="#E2E8F0" BorderThickness="0,0,0,1">
+                    <DockPanel LastChildFill="False">
+                        <!-- Left: Status Badge Pill -->
+                        <Border DockPanel.Dock="Left" Background="#F1F5F9" CornerRadius="8" Padding="10,5" VerticalAlignment="Center" Margin="0,0,12,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="8" Height="8" Fill="{Binding ServiceStatusBrush}" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <TextBlock Text="Active: " Foreground="#64748B" FontSize="12" FontWeight="SemiBold" />
+                                <TextBlock Text="{Binding ModeBadgeText}" Foreground="#0F172A" FontSize="12" FontWeight="Bold" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right: Action Buttons (WrapPanel: never collides or overflows) -->
+                        <WrapPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+                            <Button Style="{StaticResource RoundedPrimaryButton}" Content="📡 Scan LAN" 
+                                    Command="{Binding DiscoverServersCommand}" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource RoundedSecondaryButton}" Content="🔄 Refresh All" 
+                                    Command="{Binding RefreshCommand}" />
+                        </WrapPanel>
+
+                        <!-- Center: Quick Mode Selector Pills -->
+                        <Border HorizontalAlignment="Center" Background="#F8FAFC" CornerRadius="8" 
+                                BorderBrush="#E2E8F0" BorderThickness="1" Padding="3,2" VerticalAlignment="Center" Margin="8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Style="{StaticResource HeaderPillButton}" Content="🖥️ Server" 
+                                        Command="{Binding SwitchModeCommand}" CommandParameter="Server" Margin="2,0" />
+                                <Button Style="{StaticResource HeaderPillButton}" Content="💻 Client" 
+                                        Command="{Binding SwitchModeCommand}" CommandParameter="Client" Margin="2,0" />
+                                <Button Style="{StaticResource HeaderPillButton}" Content="🔄 Combined" 
+                                        Command="{Binding SwitchModeCommand}" CommandParameter="Combined" Margin="2,0" />
+                            </StackPanel>
+                        </Border>
+                    </DockPanel>
+                </Border>
+
+                <!-- CONTENT AREA BY TAB -->
+                <Grid Grid.Row="1" Margin="16,14">
+
+                    <!-- ========================================== -->
+                    <!-- TAB 0: PRINTERS HUB (UNIFIED PRINTER PAGE) -->
+                    <!-- ========================================== -->
+                    <Grid Visibility="{Binding SelectedTabIndex, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=0}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" MinWidth="340" />
+                            <ColumnDefinition Width="1.2*" MinWidth="380" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT COLUMN: LOCAL SPOOLER PRINTERS (HOST SHARING) -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="14" Padding="16" Margin="0,0,8,0"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Header Title -->
+                                <DockPanel Grid.Row="0" Margin="0,0,0,4">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Local Printers" FontWeight="Bold" FontSize="15" Foreground="#0F172A" />
+                                        <Border Background="#EEF2FF" CornerRadius="6" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TotalPrintersCount, StringFormat='{}{0} Installed'}" Foreground="#4F46E5" FontSize="11" FontWeight="Bold" />
+                                        </Border>
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <!-- Subtitle & Action Toolbar (Single Row) -->
+                                <DockPanel Grid.Row="1" Margin="0,0,0,10">
+                                    <TextBlock Text="Printers on this PC (Windows Spooler)" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Style="{StaticResource RoundedSecondaryButton}" Content="Toggle Share" 
+                                                Command="{Binding ToggleShareCommand}" Margin="0,0,6,0" Padding="10,3" Height="28" FontSize="11" />
+                                        <Button Style="{StaticResource RoundedPrimaryButton}" Content="Test Print" 
+                                                Command="{Binding SendTestPrintCommand}" Padding="10,3" Height="28" FontSize="11" />
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <!-- Local Printers ListBox -->
+                                <ListBox Grid.Row="2" ItemsSource="{Binding Printers}" SelectedItem="{Binding SelectedPrinter}"
+                                         BorderThickness="0" Background="Transparent"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Padding="12,10" Margin="0,3" Background="#F8FAFC" CornerRadius="10"
+                                                    BorderBrush="#E2E8F0" BorderThickness="1">
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Row 0: Name + Badges -->
+                                                    <DockPanel Grid.Row="0">
+                                                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="6,0,0,0">
+                                                            <Border Background="{Binding ShareBadgeBrush}" CornerRadius="6" Padding="6,2" Margin="0,0,4,0">
+                                                                <TextBlock Text="{Binding ShareBadgeText}" Foreground="White" FontSize="10" FontWeight="Bold" />
+                                                            </Border>
+                                                            <Border Background="#ECFDF5" CornerRadius="6" Padding="6,2">
+                                                                <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBadgeBrush}" FontSize="10" FontWeight="Bold" />
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="13" Foreground="#1E293B" TextTrimming="CharacterEllipsis" />
+                                                    </DockPanel>
+
+                                                    <!-- Row 1: Driver -->
+                                                    <TextBlock Grid.Row="1" Text="{Binding DriverName, StringFormat='Driver: {0}'}" FontSize="11" Foreground="#64748B" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+
+                                                    <!-- Row 2: Capabilities & Custom Forms Badge -->
+                                                    <WrapPanel Grid.Row="2" Margin="0,4,0,0">
+                                                        <TextBlock Text="{Binding CapabilitiesSummary}" FontSize="10" Foreground="#94A3B8" Margin="0,0,6,0" />
+                                                        <Border Background="#FEF3C7" CornerRadius="5" Padding="5,1" Margin="0,1,0,0"
+                                                                Visibility="{Binding CustomForms.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <TextBlock Text="{Binding CustomForms.Count, StringFormat='📄 {0} Custom Forms'}" FontSize="10" FontWeight="SemiBold" Foreground="#92400E" />
+                                                        </Border>
+                                                    </WrapPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </Grid>
+                        </Border>
+
+                        <!-- RIGHT COLUMN: NETWORK SHARED PRINTERS (DIRECT PRINTER AUTO-DISCOVERY + 1-CLICK WINDOWS) -->
+                        <Border Grid.Column="1" Background="White" CornerRadius="14" Padding="16" Margin="8,0,0,0"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Header Title -->
+                                <DockPanel Grid.Row="0" Margin="0,0,0,4">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="Network Shared Printers" FontWeight="Bold" FontSize="15" Foreground="#0F172A" />
+                                        <Border Background="#ECFDF5" CornerRadius="6" Padding="6,2" Margin="8,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding RemotePrinters.Count, StringFormat='{}{0} Discovered'}" Foreground="#059669" FontSize="11" FontWeight="Bold" />
+                                        </Border>
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <!-- Subtitle & Action Toolbar -->
+                                <DockPanel Grid.Row="1" Margin="0,0,0,10">
+                                    <TextBlock Text="Auto-syncs server driver and custom page sizes (Surat Jalan, Receipt, Labels)" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Style="{StaticResource RoundedSecondaryButton}" Content="📡 Scan" 
+                                                Command="{Binding DiscoverServersCommand}" Margin="0,0,6,0" Padding="8,3" Height="28" FontSize="11" />
+                                        <Button Style="{StaticResource RoundedSecondaryButton}" Content="Test Print" 
+                                                Command="{Binding SendRemoteTestPrintCommand}" Padding="8,3" Height="28" FontSize="11" />
+                                    </StackPanel>
+                                </DockPanel>
+
+                                <!-- Remote Printers List -->
+                                <Grid Grid.Row="2">
+                                    <ListBox ItemsSource="{Binding RemotePrinters}" SelectedItem="{Binding SelectedRemotePrinter}"
+                                             BorderThickness="0" Background="Transparent"
+                                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="12,10" Margin="0,3" Background="#F8FAFC" CornerRadius="10"
+                                                        BorderBrush="#E2E8F0" BorderThickness="1">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                            <RowDefinition Height="Auto" />
+                                                        </Grid.RowDefinitions>
+
+                                                        <!-- Row 0: Printer Name & Origin Badges -->
+                                                        <DockPanel Grid.Row="0">
+                                                            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="6,0,0,0">
+                                                                <Border Background="{Binding InstalledBadgeBrush}" CornerRadius="6" Padding="6,2">
+                                                                    <TextBlock Text="{Binding InstalledBadgeText}" Foreground="White" FontWeight="Bold" FontSize="10" />
+                                                                </Border>
+                                                            </StackPanel>
+
+                                                            <WrapPanel VerticalAlignment="Center">
+                                                                <TextBlock Text="🖨️ " FontSize="13" VerticalAlignment="Center" />
+                                                                <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="13" Foreground="#1E293B" TextTrimming="CharacterEllipsis" Margin="2,0,6,0" />
+                                                                <Border Background="#EEF2FF" CornerRadius="5" Padding="5,1" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding OriginBadgeText}" Foreground="#4F46E5" FontSize="10" FontWeight="SemiBold" />
+                                                                </Border>
+                                                            </WrapPanel>
+                                                        </DockPanel>
+
+                                                        <!-- Row 1: Driver & TCP Bridge Port -->
+                                                        <DockPanel Grid.Row="1" Margin="0,3,0,0">
+                                                            <TextBlock Text="{Binding DriverName, StringFormat='Driver: {0}'}" FontSize="11" Foreground="#475569" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock HorizontalAlignment="Right" Text="{Binding BridgePortDisplay, StringFormat='TCP Bridge: {0}'}" FontSize="10" Foreground="#059669" FontWeight="SemiBold" />
+                                                        </DockPanel>
+
+                                                        <!-- Row 2: Custom Forms Synced Badge -->
+                                                        <Border Grid.Row="2" Background="#FEF3C7" CornerRadius="5" Padding="6,2" Margin="0,4,0,0" HorizontalAlignment="Left"
+                                                                Visibility="{Binding CustomForms.Count, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="📄 " FontSize="10" VerticalAlignment="Center" />
+                                                                <TextBlock Text="{Binding CustomFormsSummary}" FontSize="10" FontWeight="SemiBold" Foreground="#92400E" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                        </Border>
+
+                                                        <!-- Row 3: Action Buttons (WrapPanel: NEVER clips or overflows!) -->
+                                                        <WrapPanel Grid.Row="3" Margin="0,8,0,0" HorizontalAlignment="Right">
+                                                            <!-- 1-Click Add to Windows button -->
+                                                            <Button Content="➕ Add to Windows" 
+                                                                    ToolTip="Installs driver from server and registers all custom paper sizes automatically"
+                                                                    Command="{Binding DataContext.InstallWindowsPrinterCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Style="{StaticResource RoundedPrimaryButton}" Padding="10,3" Height="28" FontSize="11" Margin="0,0,6,3"
+                                                                    Visibility="{Binding CanInstallInWindows, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                                            <!-- Remove from Windows button -->
+                                                            <Button Content="🗑️ Remove" 
+                                                                    Command="{Binding DataContext.UninstallWindowsPrinterCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Style="{StaticResource RoundedDangerButton}" Padding="8,3" Height="28" FontSize="11" Margin="0,0,6,3"
+                                                                    Visibility="{Binding CanUninstallFromWindows, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                                            <!-- Remote Test Print -->
+                                                            <Button Content="🖨️ Test Print" 
+                                                                    Command="{Binding DataContext.SendRemoteTestPrintCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                                    Style="{StaticResource RoundedSecondaryButton}" Padding="8,3" Height="28" FontSize="11" Margin="0,0,0,3" />
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+
+                                    <!-- Empty State Banner -->
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
+                                                Visibility="{Binding RemotePrinters.Count, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=0}">
+                                        <TextBlock Text="📡" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,6" />
+                                        <TextBlock Text="No remote shared printers discovered yet." FontWeight="SemiBold" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Click 'Scan' above or expand manual server connection below." FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Collapsible Manual Server IP Drawer -->
+                                <Expander Grid.Row="3" Header="⚙️ Manual Server IP &amp; Port (Optional for routed subnets / VPN)" 
+                                          IsExpanded="False" Margin="0,8,0,0" Foreground="#475569" FontSize="11" FontWeight="SemiBold">
+                                    <Border Background="#F8FAFC" CornerRadius="8" Padding="10" Margin="0,4,0,0" BorderBrush="#E2E8F0" BorderThickness="1">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Row 0: Inputs in Flexible Grid -->
+                                            <Grid Grid.Row="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="2*" MinWidth="130" />
+                                                    <ColumnDefinition Width="*" MinWidth="70" />
+                                                    <ColumnDefinition Width="2*" MinWidth="120" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                                    <TextBlock Text="Server IP / Hostname" FontSize="10" Foreground="#475569" Margin="0,0,0,2" />
+                                                    <TextBox Style="{StaticResource RoundedLightTextBox}" Text="{Binding ServerAddressInput, UpdateSourceTrigger=PropertyChanged}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="1" Margin="0,0,6,0">
+                                                    <TextBlock Text="Port (8270)" FontSize="10" Foreground="#475569" Margin="0,0,0,2" />
+                                                    <TextBox Style="{StaticResource RoundedLightTextBox}" Text="{Binding ServerPortInput, UpdateSourceTrigger=PropertyChanged}" />
+                                                </StackPanel>
+
+                                                <StackPanel Grid.Column="2">
+                                                    <TextBlock Text="Bearer Token (Optional)" FontSize="10" Foreground="#475569" Margin="0,0,0,2" />
+                                                    <TextBox Style="{StaticResource RoundedLightTextBox}" Text="{Binding ServerTokenInput, UpdateSourceTrigger=PropertyChanged}" />
+                                                </StackPanel>
+                                            </Grid>
+
+                                            <!-- Row 1: Actions & Status -->
+                                            <DockPanel Grid.Row="1" Margin="0,8,0,0">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Ellipse Width="8" Height="8" Fill="{Binding ServerConnectionBrush}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ServerConnectionBadge}" FontSize="11" FontWeight="SemiBold" Foreground="#334155" VerticalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                                    <Button Style="{StaticResource RoundedSecondaryButton}" Content="💾 Save" 
+                                                            Command="{Binding AddRemoteServerCommand}" Margin="0,0,6,0" Padding="10,2" Height="28" FontSize="11" />
+                                                    <Button Style="{StaticResource RoundedPrimaryButton}" Content="⚡ Connect &amp; Fetch" 
+                                                            Command="{Binding TestConnectionCommand}" Padding="10,2" Height="28" FontSize="11" />
+                                                </StackPanel>
+                                            </DockPanel>
+                                        </Grid>
+                                    </Border>
+                                </Expander>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <!-- ========================================== -->
+                    <!-- TAB 1: PRINT JOBS (MONITOR & INSPECTOR)    -->
+                    <!-- ========================================== -->
+                    <Grid Visibility="{Binding SelectedTabIndex, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=1}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Responsive Search & Filter Toolbar -->
+                        <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="12,8" Margin="0,0,0,10"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <DockPanel LastChildFill="False">
+                                <!-- Right Record Count -->
+                                <TextBlock DockPanel.Dock="Right" Text="{Binding FilteredJobs.Count, StringFormat='{}{0} Print Jobs'}" 
+                                           VerticalAlignment="Center" Foreground="#64748B" FontWeight="Bold" FontSize="12" Margin="10,0,0,0" />
+
+                                <!-- Left Toolbar Controls (WrapPanel: never collides or truncates) -->
+                                <WrapPanel VerticalAlignment="Center">
+                                    <TextBlock Text="🔍 Filter:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#475569" FontSize="12" />
+                                    <TextBox Style="{StaticResource RoundedLightTextBox}" Text="{Binding JobSearchQuery, UpdateSourceTrigger=PropertyChanged}" 
+                                             Width="170" Margin="0,0,10,0" />
+
+                                    <TextBlock Text="Status:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="#475569" FontSize="12" />
+                                    <ComboBox ItemsSource="{Binding StatusFilterOptions}" SelectedItem="{Binding JobStatusFilter, Mode=TwoWay}" 
+                                              Width="110" Height="32" VerticalContentAlignment="Center" Margin="0,0,10,0" />
+
+                                    <Button Style="{StaticResource RoundedSecondaryButton}" Content="🔄 Refresh" 
+                                            Command="{Binding RefreshJobsCommand}" Margin="0,0,6,0" FontSize="11" />
+
+                                    <Button Style="{StaticResource RoundedSecondaryButton}" Content="🧹 Clear Completed" 
+                                            Command="{Binding ClearCompletedJobsCommand}" FontSize="11" />
+                                </WrapPanel>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Jobs DataGrid -->
+                        <Border Grid.Row="1" Background="White" CornerRadius="12" Padding="12"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Grid>
+                                <DataGrid ItemsSource="{Binding FilteredJobs}" SelectedItem="{Binding SelectedJob}"
+                                          AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                          HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                          BorderThickness="0" RowHeight="38" Background="White"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                          ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Time" Binding="{Binding FormattedTime}" Width="85" />
+                                        <DataGridTextColumn Header="Document Title" Binding="{Binding DocumentName}" Width="2*" MinWidth="140" />
+                                        <DataGridTextColumn Header="Target Printer" Binding="{Binding PrinterName}" Width="1.5*" MinWidth="110" />
+                                        <DataGridTextColumn Header="Client ID" Binding="{Binding ClientId}" Width="*" MinWidth="80" />
+                                        <DataGridTextColumn Header="Size" Binding="{Binding FormattedSize}" Width="75" />
+
+                                        <!-- Status Badge Pill -->
+                                        <DataGridTemplateColumn Header="State" Width="100">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{Binding StateBadgeBackgroundBrush}" CornerRadius="6" Padding="6,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding StateName}" Foreground="{Binding StateBadgeForegroundBrush}" FontWeight="Bold" FontSize="10" />
+                                                    </Border>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+
+                                        <DataGridTextColumn Header="Spooler ID" Binding="{Binding SpoolerJobId}" Width="75" />
+                                        <DataGridTextColumn Header="Diagnostic Code" Binding="{Binding ErrorCode}" Width="*" MinWidth="80" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- Empty State Placeholder -->
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
+                                            Visibility="{Binding FilteredJobs.Count, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=0}">
+                                    <TextBlock Text="📋" FontSize="32" HorizontalAlignment="Center" Margin="0,0,0,6" />
+                                    <TextBlock Text="No print jobs matching the current filter." FontWeight="SemiBold" FontSize="13" Foreground="#64748B" HorizontalAlignment="Center" />
+                                    <TextBlock Text="Jobs submitted from any Windows application will appear here in real time." FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Center" Margin="0,2,0,0" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Selected Job Inspector Drawer -->
+                        <Border Grid.Row="2" Background="White" CornerRadius="12" Padding="14,10" Margin="0,10,0,0"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <DockPanel LastChildFill="False">
+                                <!-- Right Action Buttons -->
+                                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                                    <Button Style="{StaticResource RoundedDangerButton}" Content="Cancel Job" 
+                                            Command="{Binding CancelJobCommand}" Margin="0,0,6,0" />
+                                    <Button Style="{StaticResource RoundedPrimaryButton}" Content="Safe Retry Job" 
+                                            Command="{Binding RetryJobCommand}" />
+                                </StackPanel>
+
+                                <!-- Left Job Metadata in WrapPanel -->
+                                <StackPanel VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,4">
+                                        <TextBlock Text="📄" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0" />
+                                        <TextBlock Text="{Binding SelectedJob.DocumentName, FallbackValue='(No job selected)'}" 
+                                                   FontWeight="Bold" FontSize="13" Foreground="#0F172A" VerticalAlignment="Center" Margin="0,0,8,0" TextTrimming="CharacterEllipsis" />
+
+                                        <Border Background="{Binding SelectedJob.StateBadgeBackgroundBrush}" CornerRadius="6" Padding="6,2" Margin="0,0,6,0" VerticalAlignment="Center"
+                                                Visibility="{Binding SelectedJob, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="{Binding SelectedJob.StateName}" Foreground="{Binding SelectedJob.StateBadgeForegroundBrush}" FontWeight="Bold" FontSize="10" />
+                                        </Border>
+
+                                        <TextBlock Text="{Binding SelectedJob.SpoolerJobId, StringFormat='Spooler Job #{0}'}" Foreground="#64748B" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"
+                                                   Visibility="{Binding SelectedJob.SpoolerJobId, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- WrapPanel for Metadata items -->
+                                    <WrapPanel VerticalAlignment="Center">
+                                        <TextBlock Text="Target: " FontWeight="SemiBold" Foreground="#64748B" FontSize="11" />
+                                        <TextBlock Text="{Binding SelectedJob.PrinterName, FallbackValue='-'}" FontWeight="Bold" Foreground="#334155" FontSize="11" Margin="0,0,10,0" />
+
+                                        <TextBlock Text="Client: " FontWeight="SemiBold" Foreground="#64748B" FontSize="11" />
+                                        <TextBlock Text="{Binding SelectedJob.ClientId, FallbackValue='-'}" Foreground="#334155" FontSize="11" Margin="0,0,10,0" />
+
+                                        <TextBlock Text="Size: " FontWeight="SemiBold" Foreground="#64748B" FontSize="11" />
+                                        <TextBlock Text="{Binding SelectedJob.FormattedSize, FallbackValue='-'}" Foreground="#334155" FontSize="11" Margin="0,0,10,0" />
+
+                                        <TextBlock Text="Job ID: " FontWeight="SemiBold" Foreground="#64748B" FontSize="11" />
+                                        <TextBlock Text="{Binding SelectedJob.FullJobId, FallbackValue='-'}" Foreground="#475569" FontFamily="Consolas" FontSize="11" VerticalAlignment="Center" Margin="0,0,6,0" />
+
+                                        <Button Content="📋 Copy" Command="{Binding CopyJobIdCommand}" CommandParameter="{Binding SelectedJob.FullJobId}"
+                                                Style="{StaticResource RoundedSecondaryButton}" Padding="6,2" Height="22" FontSize="10" Margin="0,0,8,0"
+                                                Visibility="{Binding SelectedJob, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                                        <TextBlock Text="{Binding SelectedJob.ErrorCode, StringFormat='Error: {0}'}" Foreground="#DC2626" FontWeight="SemiBold" FontSize="11"
+                                                   Visibility="{Binding SelectedJob.ErrorCode, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- ==================================================== -->
+                    <!-- TAB 2: SETTINGS & DIAGNOSTICS (COMBINED UNIFIED TAB) -->
+                    <!-- ==================================================== -->
+                    <Grid Visibility="{Binding SelectedTabIndex, Converter={StaticResource EqualityToVisibilityConverter}, ConverterParameter=2}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" MinWidth="340" />
+                            <ColumnDefinition Width="1.2*" MinWidth="380" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT COLUMN: OPERATING ROLE & CLIENT ACCESS TOKENS -->
+                        <Border Grid.Column="0" Background="White" CornerRadius="14" Padding="16" Margin="0,0,8,0"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <TextBlock Text="Operating Mode Configuration" FontWeight="Bold" FontSize="15" Foreground="#0F172A" Margin="0,0,0,4" />
+                                    <TextBlock Text="Select how this machine participates in the PrintLink network:" FontSize="11" Foreground="#64748B" Margin="0,0,0,10" />
+
+                                    <!-- Server Mode Card -->
+                                    <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,6" BorderBrush="#E2E8F0" BorderThickness="1">
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Left">
+                                                <TextBlock Text="🖥️ Server Mode (Host)" FontWeight="Bold" FontSize="12" Foreground="#0F172A" />
+                                                <TextBlock Text="Shares local printers to network clients." FontSize="11" Foreground="#64748B" />
+                                            </StackPanel>
+                                            <Button Style="{StaticResource RoundedPrimaryButton}" Content="Set Server" Command="{Binding SwitchModeCommand}" CommandParameter="Server"
+                                                    HorizontalAlignment="Right" Padding="10,3" Height="28" FontSize="11" />
+                                        </DockPanel>
+                                    </Border>
+
+                                    <!-- Client Mode Card -->
+                                    <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,6" BorderBrush="#E2E8F0" BorderThickness="1">
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Left">
+                                                <TextBlock Text="💻 Client Mode (Workstation)" FontWeight="Bold" FontSize="12" Foreground="#0F172A" />
+                                                <TextBlock Text="Discovers and prints to remote shared printers." FontSize="11" Foreground="#64748B" />
+                                            </StackPanel>
+                                            <Button Style="{StaticResource RoundedPrimaryButton}" Content="Set Client" Command="{Binding SwitchModeCommand}" CommandParameter="Client"
+                                                    HorizontalAlignment="Right" Padding="10,3" Height="28" FontSize="11" />
+                                        </DockPanel>
+                                    </Border>
+
+                                    <!-- Combined Mode Card -->
+                                    <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,12" BorderBrush="#E2E8F0" BorderThickness="1">
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Left">
+                                                <TextBlock Text="🔄 Combined Mode (Both)" FontWeight="Bold" FontSize="12" Foreground="#0F172A" />
+                                                <TextBlock Text="Shares local printers AND connects to remote servers." FontSize="11" Foreground="#64748B" />
+                                            </StackPanel>
+                                            <Button Style="{StaticResource RoundedPrimaryButton}" Content="Set Combined" Command="{Binding SwitchModeCommand}" CommandParameter="Combined"
+                                                    HorizontalAlignment="Right" Padding="10,3" Height="28" FontSize="11" />
+                                        </DockPanel>
+                                    </Border>
+
+                                    <CheckBox Content="Launch PrintLink Desktop automatically at Windows login" 
+                                              IsChecked="{Binding IsAutoStartEnabled}" FontWeight="Medium" Foreground="#334155" FontSize="11" Margin="0,0,0,12" />
+
+                                    <!-- OTA Updates Section -->
+                                    <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,14" BorderBrush="#E2E8F0" BorderThickness="1">
+                                        <DockPanel>
+                                            <StackPanel DockPanel.Dock="Left">
+                                                <TextBlock Text="🚀 Pembaruan Sistem (OTA Update via GitHub)" FontWeight="Bold" FontSize="12" Foreground="#0F172A" />
+                                                <TextBlock Text="Periksa versi rilis terbaru langsung dari repositori GitHub." FontSize="11" Foreground="#64748B" />
+                                            </StackPanel>
+                                            <Button Style="{StaticResource RoundedPrimaryButton}" Content="🔄 Cek Update" 
+                                                    Command="{Binding CheckForUpdatesCommand}" HorizontalAlignment="Right" Padding="12,4" Height="28" FontSize="11" />
+                                        </DockPanel>
+                                    </Border>
+
+                                    <Separator Background="#E2E8F0" Margin="0,0,0,12" />
+
+                                    <!-- Client Access Token Generator -->
+                                    <TextBlock Text="Client Security Tokens" FontWeight="Bold" FontSize="14" Foreground="#0F172A" Margin="0,0,0,4" />
+                                    <TextBlock Text="Generate cryptographically signed Bearer tokens to authorize client PCs:" FontSize="11" Foreground="#64748B" Margin="0,0,0,8" />
+
+                                    <Grid Margin="0,0,0,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" Style="{StaticResource RoundedLightTextBox}" Text="{Binding NewClientNameInput, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Margin="0,0,8,0" Height="30" FontSize="11" />
+                                        <Button Grid.Column="1" Style="{StaticResource RoundedPrimaryButton}" Content="Generate" 
+                                                Command="{Binding CreateClientTokenCommand}" Height="30" Padding="12,3" FontSize="11" />
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0" Style="{StaticResource RoundedLightTextBox}" Text="{Binding GeneratedTokenOutput, Mode=OneWay}" 
+                                                 IsReadOnly="True" Margin="0,0,8,0" Height="30" FontSize="11" FontFamily="Consolas" />
+                                        <Button Grid.Column="1" Style="{StaticResource RoundedSecondaryButton}" Content="📋 Copy" 
+                                                Command="{Binding CopyTokenCommand}" Height="30" Padding="12,3" FontSize="11" />
+                                    </Grid>
+
+                                    <!-- Authorized Clients Table -->
+                                    <TextBlock Text="Authorized Clients:" FontWeight="SemiBold" FontSize="12" Foreground="#334155" Margin="0,0,0,4" />
+                                    <DataGrid ItemsSource="{Binding Clients}" Height="110"
+                                              AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                              HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                                              BorderThickness="1" BorderBrush="#E2E8F0" RowHeight="30" Background="White"
+                                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Client Name" Binding="{Binding FriendlyName}" Width="*" />
+                                            <DataGridTextColumn Header="Client ID" Binding="{Binding ClientId}" Width="*" />
+                                            <DataGridTemplateColumn Header="Action" Width="80">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Button Content="🗑️ Hapus" Command="{Binding DataContext.RevokeClientCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                                CommandParameter="{Binding}" Background="#FEE2E2" Foreground="#DC2626" FontWeight="Bold"
+                                                                Padding="6,2" BorderThickness="0" Cursor="Hand" FontSize="10">
+                                                            <Button.Resources>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="CornerRadius" Value="4" />
+                                                                </Style>
+                                                            </Button.Resources>
+                                                        </Button>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- RIGHT COLUMN: SUPPORT BUNDLE & DIAGNOSTIC TRACE -->
+                        <Border Grid.Column="1" Background="White" CornerRadius="14" Padding="16" Margin="8,0,0,0"
+                                BorderBrush="#E2E8F0" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Support Bundle Export Card -->
+                                <Border Grid.Row="0" Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,10" BorderBrush="#E2E8F0" BorderThickness="1">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Grid.Row="0" Margin="0,0,0,8">
+                                            <TextBlock Text="📦 Support Diagnostic Bundle (.ZIP)" FontWeight="Bold" FontSize="13" Foreground="#0F172A" />
+                                            <TextBlock Text="Export sanitized system logs, Spooler status, printer catalog, and job telemetry to Desktop." 
+                                                       FontSize="11" Foreground="#64748B" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                        </StackPanel>
+
+                                        <Button Grid.Row="1" Style="{StaticResource RoundedPrimaryButton}" Content="Export Support Bundle (.ZIP)" 
+                                                Command="{Binding ExportDiagnosticsCommand}" HorizontalAlignment="Left" Padding="12,5" Height="30" FontSize="11" />
+                                    </Grid>
+                                </Border>
+
+                                <!-- Spooler Health Status -->
+                                <Border Grid.Row="1" Background="#ECFDF5" CornerRadius="8" Padding="10,6" Margin="0,0,0,10" BorderBrush="#A7F3D0" BorderThickness="1">
+                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                        <TextBlock Text="🛡️ " FontSize="13" VerticalAlignment="Center" />
+                                        <StackPanel VerticalAlignment="Center" Margin="4,0,0,0">
+                                            <TextBlock Text="Windows Print Spooler (spoolsv.exe) Health: OK" FontWeight="Bold" FontSize="11" Foreground="#065F46" />
+                                            <TextBlock Text="Local spooler service is monitored continuously by the PrintLink recovery daemon." FontSize="10" Foreground="#047857" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Live Diagnostic Trace Console -->
+                                <Grid Grid.Row="2">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="Live Diagnostic &amp; Network Connection Trace" FontWeight="Bold" FontSize="12" Foreground="#334155" Margin="0,0,0,4" />
+
+                                    <Border Grid.Row="1" Background="#0F172A" CornerRadius="10" Padding="10">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                            <TextBlock Text="{Binding ConnectionTestLog}" Foreground="#38BDF8" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" />
+                                        </ScrollViewer>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+
+                <!-- BOTTOM STATUS BAR (Showing Local/Server IP Prominently in Bottom-Left) -->
+                <Border Grid.Row="2" Background="#0F172A" Padding="12,0" Height="36">
+                    <Grid VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Prominent Left IP Badge (Server or Client IP) -->
+                        <Border Grid.Column="0" Background="#1E293B" CornerRadius="6" Padding="8,3" Margin="0,0,8,0" BorderBrush="#334155" BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Ellipse Width="8" Height="8" Fill="#10B981" Margin="0,0,6,0" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding NetworkIdentityText}" Foreground="#38BDF8" FontWeight="Bold" FontSize="11" FontFamily="Consolas, Segoe UI" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Target / Server Status Info -->
+                        <Border Grid.Column="1" Background="#1E293B" CornerRadius="6" Padding="8,3" Margin="0,0,10,0" BorderBrush="#334155" BorderThickness="1">
+                            <TextBlock Text="{Binding NetworkTargetText}" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" />
+                        </Border>
+
+                        <!-- Real-time Status Message -->
+                        <TextBlock Grid.Column="2" Text="{Binding StatusMessage}" Foreground="#64748B" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" Margin="0,0,8,0" />
+
+                        <!-- Version & Quick Update Check -->
+                        <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="v1.0.0" Foreground="#475569" FontSize="11" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Button Style="{StaticResource HeaderPillButton}" Content="🔄 Cek Update" 
+                                    Command="{Binding CheckForUpdatesCommand}" Padding="8,2" Height="22" FontSize="10" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- FIRST-RUN SETUP WIZARD OVERLAY -->
+        <Grid Background="#99000000" Visibility="{Binding IsFirstRun, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Border Width="560" MaxHeight="600" Background="White" CornerRadius="16" Padding="24" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <Image Source="Assets/app.png" Width="40" Height="40" HorizontalAlignment="Left" Margin="0,0,0,10" RenderOptions.BitmapScalingMode="HighQuality" />
+
+                        <TextBlock Text="Welcome to L-Net PrintLink" FontSize="19" FontWeight="Bold" Foreground="#0F172A" Margin="0,0,0,4" />
+                        <TextBlock Text="Choose your operating role to configure printer sharing on your network."
+                                   FontSize="12" Foreground="#64748B" Margin="0,0,0,16" />
+
+                        <!-- Step 1: Mode Selection Cards -->
+                        <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,8" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <TextBlock Text="🖥️ Server (Host)" FontWeight="Bold" FontSize="13" Foreground="#0F172A" />
+                                    <TextBlock Text="Publish local printers to other computers on this LAN." FontSize="11" Foreground="#64748B" />
+                                </StackPanel>
+                                <Button Style="{StaticResource RoundedPrimaryButton}" Content="Select Server" 
+                                        Command="{Binding SwitchModeCommand}" CommandParameter="Server" HorizontalAlignment="Right" Padding="12,4" Height="28" FontSize="11" />
+                            </DockPanel>
+                        </Border>
+
+                        <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,8" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <TextBlock Text="💻 Client (Workstation)" FontWeight="Bold" FontSize="13" Foreground="#0F172A" />
+                                    <TextBlock Text="Connect to a PrintLink server to use remote shared printers." FontSize="11" Foreground="#64748B" />
+                                </StackPanel>
+                                <Button Style="{StaticResource RoundedPrimaryButton}" Content="Select Client" 
+                                        Command="{Binding SwitchModeCommand}" CommandParameter="Client" HorizontalAlignment="Right" Padding="12,4" Height="28" FontSize="11" />
+                            </DockPanel>
+                        </Border>
+
+                        <Border Background="#F8FAFC" CornerRadius="10" Padding="12" Margin="0,0,0,16" BorderBrush="#E2E8F0" BorderThickness="1">
+                            <DockPanel>
+                                <StackPanel DockPanel.Dock="Left">
+                                    <TextBlock Text="🔄 Server + Client (Combined)" FontWeight="Bold" FontSize="13" Foreground="#0F172A" />
+                                    <TextBlock Text="Both share local printers and connect to remote servers." FontSize="11" Foreground="#64748B" />
+                                </StackPanel>
+                                <Button Style="{StaticResource RoundedPrimaryButton}" Content="Select Combined" 
+                                        Command="{Binding SwitchModeCommand}" CommandParameter="Combined" HorizontalAlignment="Right" Padding="12,4" Height="28" FontSize="11" />
+                            </DockPanel>
+                        </Border>
+
+                        <DockPanel>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="Selected Mode: " VerticalAlignment="Center" Foreground="#475569" FontSize="12" FontWeight="Medium" />
+                                <TextBlock Text="{Binding CurrentMode}" VerticalAlignment="Center" FontWeight="Bold" Foreground="#2563EB" FontSize="12" Margin="4,0,0,0" />
+                            </StackPanel>
+
+                            <Button Style="{StaticResource RoundedPrimaryButton}" Content="Complete Setup &amp; Launch" 
+                                    Command="{Binding CompleteWizardCommand}" HorizontalAlignment="Right" Padding="16,6" Height="34" FontSize="12" />
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
